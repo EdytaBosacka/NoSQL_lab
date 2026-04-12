@@ -3,7 +3,7 @@ services:
     build:
       context: ./Docker/jupyter
       dockerfile: Dockerfile
-    container_name: spark_jupyter
+    container_name: spark_jupyter_streaming_lab
     ports:
       - "8888:8888"
     volumes:

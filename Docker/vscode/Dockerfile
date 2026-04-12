@@ -2,23 +2,19 @@ FROM codercom/code-server
 # https://coder.com/docs/code-server/FAQ
 
 USER root
-RUN apt-get update && apt-get install -y python3 python3-pip python3-venv openjdk-17-jdk curl && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y python3 python3-pip python3-venv curl tar gzip && apt-get clean
 
-# Instalacja Spark
-ENV SPARK_PACKAGE=spark-3.5.5-bin-hadoop3-scala2.13
+# Zainstaluj Spark 3.5.0 z Hadoop 3
+# ENV SPARK_HOME=/opt/spark
+# ENV PATH="$SPARK_HOME/bin:$PATH"
 
-RUN curl -fSL https://downloads.apache.org/spark/spark-3.5.5/${SPARK_PACKAGE}.tgz -o /tmp/spark.tgz && \
-    tar -xzf /tmp/spark.tgz -C /opt && \
-    ln -s /opt/${SPARK_PACKAGE} /opt/spark && \
-    rm /tmp/spark.tgz
-
-ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
-ENV SPARK_HOME=/opt/spark
-ENV PATH="${JAVA_HOME}/bin:${SPARK_HOME}/bin:${PATH}"
+# RUN curl -fSL https://downloads.apache.org/spark/spark-3.5.5/spark-3.5.5-bin-hadoop3.tgz \
+#     | tar -xz -C /opt && \
+#     mv /opt/spark-3.5.5-bin-hadoop3 ${SPARK_HOME}
 
 USER coder
 RUN python3 -m venv /home/coder/nosql_venv
-RUN /home/coder/nosql_venv/bin/pip install jupyterlab ipywidgets
+RUN /home/coder/nosql_venv/bin/pip install jupyterlab ipywidgets pyspark
 RUN /home/coder/nosql_venv/bin/pip install numpy
 RUN /home/coder/nosql_venv/bin/pip install pandas
 RUN /home/coder/nosql_venv/bin/pip install tqdm
