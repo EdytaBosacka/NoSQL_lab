@@ -3,6 +3,12 @@ services:
     build:
       context: ./Docker/jupyter
       dockerfile: Dockerfile
+    command: >
+      jupyter lab
+      --ip=0.0.0.0
+      --port=8888
+      --no-browser
+      --NotebookApp.token=${JUPYTER_TOKEN}
     container_name: spark_jupyter_streaming_lab
     ports:
       - "8888:8888"
