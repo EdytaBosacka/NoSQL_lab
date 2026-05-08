@@ -1,40 +1,34 @@
 FROM codercom/code-server
-# https://coder.com/docs/code-server/FAQ
 
 USER root
-RUN apt-get update && apt-get install -y python3 python3-pip python3-venv curl tar gzip && apt-get clean
-
-# Zainstaluj Spark 3.5.0 z Hadoop 3
-# ENV SPARK_HOME=/opt/spark
-# ENV PATH="$SPARK_HOME/bin:$PATH"
-
-# RUN curl -fSL https://downloads.apache.org/spark/spark-3.5.5/spark-3.5.5-bin-hadoop3.tgz \
-#     | tar -xz -C /opt && \
-#     mv /opt/spark-3.5.5-bin-hadoop3 ${SPARK_HOME}
+RUN apt-get update && apt-get install -y \
+    python3 python3-pip python3-venv curl tar gzip \
+    && apt-get clean
 
 USER coder
-RUN python3 -m venv /home/coder/nosql_venv
-RUN /home/coder/nosql_venv/bin/pip install jupyterlab ipywidgets pyspark
-RUN /home/coder/nosql_venv/bin/pip install numpy
-RUN /home/coder/nosql_venv/bin/pip install pandas
-RUN /home/coder/nosql_venv/bin/pip install tqdm
-RUN /home/coder/nosql_venv/bin/pip install matplotlib
-RUN /home/coder/nosql_venv/bin/pip install tabulate
-RUN /home/coder/nosql_venv/bin/pip install delta-spark
-RUN /home/coder/nosql_venv/bin/pip install kafka-python
-RUN /home/coder/nosql_venv/bin/pip install jsonschema
-RUN /home/coder/nosql_venv/bin/pip install psycopg2-binary
-RUN /home/coder/nosql_venv/bin/pip install faust
-RUN /home/coder/nosql_venv/bin/pip install prometheus-client
-RUN /home/coder/nosql_venv/bin/pip install confluent-kafka
 
+# --- venv ---
+RUN python3 -m venv /home/coder/nosql_venv
+
+# --- instalacja wszystkiego naraz ---
+RUN /home/coder/nosql_venv/bin/pip install --no-cache-dir \
+    jupyterlab ipywidgets pyspark numpy pandas tqdm \
+    tabulate delta-spark kafka-python jsonschema psycopg2-binary \
+    confluent-kafka ipykernel
+
+# --- KLUCZOWE: kernel do notebooków ---
+RUN /home/coder/nosql_venv/bin/python -m ipykernel install \
+    --user \
+    --name=nosql_venv \
+    --display-name "Python (nosql_venv)"
+
+# --- ustaw venv jako default ---
 ENV PATH="/home/coder/nosql_venv/bin:$PATH"
 
-COPY  --chown=coder:coder ./config.yaml /home/coder/.config/code-server/config.yaml
-COPY  --chown=coder:coder ./settings.json /home/coder/.local/share/code-server/User/settings.json
+# --- vscode config ---
+COPY --chown=coder:coder ./config.yaml /home/coder/.config/code-server/config.yaml
+COPY --chown=coder:coder ./settings.json /home/coder/.local/share/code-server/User/settings.json
 
+# --- extensions ---
 RUN code-server --install-extension ms-python.python
 RUN code-server --install-extension ms-toolsai.jupyter
-
-# Code based on https://github.com/kjedrzejewski/podyplomowe_genai_public
-# Well done Krzysztof!
